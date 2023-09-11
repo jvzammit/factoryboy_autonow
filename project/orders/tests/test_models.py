@@ -1,8 +1,29 @@
 import arrow
+import contextlib
 import time_machine
 from django.test import TestCase
 from orders.models import Order
 from orders.tests.factories import OrderFactory
+
+
+@contextlib.contextmanager
+def suppress_autotime(model, fields):
+    _original_values = {}
+    for field in model._meta.local_fields:
+        if field.name in fields:
+            _original_values[field.name] = {
+                'auto_now': field.auto_now,
+                'auto_now_add': field.auto_now_add,
+            }
+            field.auto_now = False
+            field.auto_now_add = False
+    try:
+        yield
+    finally:
+        for field in model._meta.local_fields:
+            if field.name in fields:
+                field.auto_now = _original_values[field.name]['auto_now']
+                field.auto_now_add = _original_values[field.name]['auto_now_add']
 
 
 class OrderQuerysetTest(TestCase):
@@ -13,14 +34,11 @@ class OrderQuerysetTest(TestCase):
         date2 = arrow.get("2023-09-10 00:00").datetime  # today 00:00
         date3 = arrow.get("2023-09-10 00:01").datetime  # today 00:01
         
-        # approach 1
-        order1, order2, order3 = OrderFactory.create_batch(3)
-        order1.created_at = date1
-        order1.save()
-        order2.created_at = date2
-        order2.save()
-        order3.created_at = date3
-        order3.save()
+        # approach 2
+        with suppress_autotime(Order, "created_at"):
+            _ = OrderFactory(created_at=date1)
+            order2 = OrderFactory(created_at=date2)
+            order3 = OrderFactory(created_at=date3)
 
         # When created_today is called
         queryset = Order.objects.all().created_today()
