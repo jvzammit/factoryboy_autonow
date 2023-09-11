@@ -1,0 +1,32 @@
+[tool.black]
+target-version = ["py311"]
+
+[tool.isort]
+profile = "black"
+skip_glob = "*/migrations/*"
+
+[tool.ruff]
+target-version = "py311"
+
+[tool.poetry]
+name = "factoryboy_autonow"
+version = "0.1.0"
+description = "Package supporting a blog article."
+authors = [
+    "Joseph V. Zammit <jvzammit@gmail.com>",
+]
+readme = "README.md"
+[tool.poetry.dependencies]
+python = "~3.11"
+django = "^4.2.5"
+time-machine = "^2.12.0"
+
+[tool.poetry.group.dev.dependencies]
+factory-boy = "^3.3.0"
+arrow = "^1.2.3"
+ruff = "^0.0.287"
+black = "^23.9.0"
+isort = "^5.12.0"
+pre-commit = "^3.4.0"
+ipdb = "^0.13.13"
+
